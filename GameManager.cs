@@ -202,15 +202,26 @@ public class GameManager : MonoBehaviour
             puzzleOpenSound.Play();
 
             target = SearchProximateCrystal();
-            LightObjectAllocator lightObjectAllocator = target.GetComponent<LightObjectAllocator>();
-            lightObjectAllocator.lightObject.SetActive(true);
+
+            if (target != null)
+            {
+
+                LightObjectAllocator lightObjectAllocator = target.GetComponent<LightObjectAllocator>();
+                lightObjectAllocator.lightObject.SetActive(true);
+            }
         }
 
-        else if (isPuzzleOpen)
+        else if (isPuzzleOpen && target != null)
         {
-            if (puzzleEnterLabel.activeSelf == false && Vector3.Distance(Player.transform.position, target.transform.position) < 10)
+            float distance = Vector3.Distance(Player.transform.position, target.transform.position);
+
+            if (distance < 1.5f && !puzzleEnterLabel.activeSelf)
             {
                 puzzleEnterLabel.SetActive(true);
+            }
+            else if (distance >= 1.5f && puzzleEnterLabel.activeSelf)
+            {
+                puzzleEnterLabel.SetActive(false);
             }
         }
     }
