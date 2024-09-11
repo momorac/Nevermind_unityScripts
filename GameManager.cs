@@ -99,6 +99,7 @@ public class GameManager : MonoBehaviour
 
     // system reference variable
     private FirstPersonController playerController;
+    private LoadingSceneController loadingSceneController;
 
     private float walkSpeed_origin;
     private float jumpForce_origin;
@@ -111,6 +112,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         playerController = Player.GetComponent<FirstPersonController>();
+        loadingSceneController = GetComponent<LoadingSceneController>();
     }
 
     void Start()
@@ -185,6 +187,14 @@ public class GameManager : MonoBehaviour
         }
 
         // puzzlie scene load
+        if (puzzleEnterLabel.activeSelf && isPuzzleOpen)
+        {
+            if (Input.GetKeyDown(KeyCode.Return))
+            {
+                PuzzleSceneLoad();
+            }
+        }
+
         // -----test code-----
         if (Input.GetKeyDown(KeyCode.F1))
         {
@@ -224,6 +234,35 @@ public class GameManager : MonoBehaviour
                 puzzleEnterLabel.SetActive(false);
             }
         }
+    }
+
+    private void PuzzleSceneLoad()
+    {
+        switch (puzzleStage)
+        {
+            case 0:
+                loadingSceneController.nextScene = "PuzzleScene_one";
+                break;
+            case 1:
+                loadingSceneController.nextScene = "PuzzleScene_two";
+                break;
+            case 2:
+                loadingSceneController.nextScene = "PuzzleScene_three";
+                break;
+            case 3:
+                loadingSceneController.nextScene = "PuzzleScene_four";
+                break;
+            case 4:
+                loadingSceneController.nextScene = "PuzzleScene_five";
+                break;
+            case 5:
+                loadingSceneController.nextScene = "PuzzleScene_six";
+                break;
+            case 6:
+                loadingSceneController.nextScene = "PuzzleScene_seven";
+                break;
+        }
+        loadingSceneController.ChangeScene();
     }
 
     private void swapItemPosition(RectTransform a, RectTransform b)
