@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour
     [Range(0, 100)]
     public static float playerHP;  //플레이어 현재 체력
     public float skillCharged = 0f;
-    public int crystalRemain;
+    public static int crystalRemain;
     public static int crystalCount = 0;
     public static int SparkCount = 0;
     public int puzzleStage = 0;
@@ -108,11 +108,6 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public int EffectCount = 3;
 
-    private void Start()
-    {
-        playerHP = 100;
-    }
-
     private void Awake()
     {
         playerController = Player.GetComponent<FirstPersonController>();
@@ -128,6 +123,7 @@ public class GameManager : MonoBehaviour
 
         skillCharged = 100f;
         puzzleStage = 0;
+        playerHP = 100;
 
         // 메인 크리스탈 오브젝트들 linkedlist에 할당                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
         for (int i = 0; i < 7; i++)

@@ -39,7 +39,7 @@ public class SparkeySpawner : MonoBehaviour
     {
         GameObject newSpark = Instantiate(Spark, randomSpawnLocations[Random.Range(0, randomSpawnLocations.Length)], Quaternion.identity);
         newSpark.SetActive(true);
-        gameManager.SparkCount++;
+        GameManager.SparkCount++;
         //Debug.Log("Spark Spawned!!");
     }
 
