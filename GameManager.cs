@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Unity.VisualStudio.Editor;
 using TMPro;
 using Unity.Mathematics;
 using Unity.VisualScripting;
@@ -18,11 +17,11 @@ public class GameManager : MonoBehaviour
     [Header("current status field")]
     private GameObject Player;
     [Range(0, 100)]
-    public float playerHP = 100;  //플레이어 현재 체력
+    public static float playerHP;  //플레이어 현재 체력
     public float skillCharged = 0f;
-    public int crystalRemain;
-    public int crystalCount = 0;
-    public int SparkCount = 0;
+    public static int crystalRemain;
+    public static int crystalCount = 0;
+    public static int SparkCount = 0;
     public int puzzleStage = 0;
     public bool isPuzzleOpen = false;
     public bool isCharacterPowerMode = false;
@@ -124,6 +123,7 @@ public class GameManager : MonoBehaviour
 
         skillCharged = 100f;
         puzzleStage = 0;
+        playerHP = 100;
 
         // 메인 크리스탈 오브젝트들 linkedlist에 할당                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
         for (int i = 0; i < 7; i++)

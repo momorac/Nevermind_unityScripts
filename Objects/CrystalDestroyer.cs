@@ -23,7 +23,7 @@ public class CrystalDestroyer : MonoBehaviour
 
     private void Start()
     {
-        gameManager.crystalRemain++;
+        GameManager.crystalRemain++;
     }
 
     public void BreakTrigger()
@@ -77,7 +77,7 @@ public class CrystalDestroyer : MonoBehaviour
 
     private void OnDestroy()
     {
-        gameManager.crystalCount++;
+        GameManager.crystalCount++;
     }
 
 }
