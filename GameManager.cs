@@ -215,6 +215,7 @@ public class GameManager : MonoBehaviour
 
             if (target != null)
             {
+                Debug.Log("Puzzle Activated! Lighted up at " + target.name);
 
                 LightObjectAllocator lightObjectAllocator = target.GetComponent<LightObjectAllocator>();
                 lightObjectAllocator.lightObject.SetActive(true);

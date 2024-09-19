@@ -5,6 +5,7 @@ using UnityEngine;
 public class EndingSceneScript : MonoBehaviour
 {
     public float colorChangeDuration = 2.0f;
+    public float ambientChangeDuration = 3.0f;
 
     [Header("Virtual Cameras")]
     public GameObject VCamera_first;
@@ -21,7 +22,15 @@ public class EndingSceneScript : MonoBehaviour
     public Animator transitionAnimator;
 
 
+    [Space(10)]
     [Header("Color Changing Materials")]
+    public Material skyBox_Material;
+    private float skybox_InitValue = 1.3f;
+    public float skybox_TargetValue;
+    public Material skyHalo_Material;
+    public Color skyHalo_InitialColor;
+    public Color skyHalo_TargetColor;
+
     [Space(10)]
     public Material firstFloor_Material;
     private Color firstFloor_InitialColor;
@@ -64,6 +73,10 @@ public class EndingSceneScript : MonoBehaviour
         water_InitialMatalic = water_Material.GetFloat("_Metallic");
         water_InitialSmothness = water_Material.GetFloat("_Smoothness");
 
+        skyBox_Material.SetFloat("_D2I", 1.3f);
+        skyHalo_Material.color = new Color(0, 0, 0, 0);
+
+
     }
 
     private void OnApplicationQuit()
@@ -79,18 +92,43 @@ public class EndingSceneScript : MonoBehaviour
         water_Material.SetFloat("_Metallic", water_InitialMatalic);
         water_Material.SetFloat("_Smoothness", water_InitialSmothness);
 
+        skyBox_Material.SetFloat("_D2I", skybox_InitValue);
+
     }
 
     private void Update()
     {
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            StartCoroutine("SkyAmbientChange");
+        }
         if (Input.GetKey(KeyCode.Space))
         {
             StartCoroutine(ChangeCameraScene());
         }
     }
 
+    private IEnumerator SkyAmbientChange()
+    {
+        float elapsedTime = 0f;
 
-    private IEnumerator ColorChange()
+
+        while (elapsedTime < ambientChangeDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / ambientChangeDuration;
+
+            float newSkyBox = Mathf.Lerp(skybox_InitValue, skybox_TargetValue, t);
+            skyBox_Material.SetFloat("_D2I", newSkyBox);
+
+            skyHalo_Material.color = Color.Lerp(skyHalo_InitialColor, skyHalo_TargetColor, t);
+
+            yield return null;
+        }
+    }
+
+    private IEnumerator GroundColorChange()
     {
         Debug.Log("Color Change Coroutine Start");
         float elapsedTime = 0f;
@@ -157,21 +195,21 @@ public class EndingSceneScript : MonoBehaviour
         {
             case 0:
                 SetAnimation();
-                StartCoroutine(ColorChange());
+                StartCoroutine(GroundColorChange());
                 VCamera_first.SetActive(true);
                 cameraCount++;
                 break;
             case 1:
                 VCamera_first.SetActive(false);
                 SetAnimation();
-                StartCoroutine(ColorChange());
+                StartCoroutine(GroundColorChange());
                 VCamera_second.SetActive(true);
                 cameraCount++;
                 break;
             case 2:
                 VCamera_second.SetActive(false);
                 SetAnimation();
-                StartCoroutine(ColorChange());
+                StartCoroutine(GroundColorChange());
                 VCamera_third.SetActive(true);
                 light_.SetActive(true);
                 cameraCount++;
