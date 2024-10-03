@@ -10,7 +10,8 @@ public class LineCollisionDetector : MonoBehaviour
     ObiSolver solver;
     public PuzzleManager_first puzzleManager;
 
-    public GameObject lightObject;
+    public GameObject fuzeObject;
+  
 
     void Awake()
     {
@@ -40,14 +41,13 @@ public class LineCollisionDetector : MonoBehaviour
                 // get the collider:
                 var col = colliderWorld.colliderHandles[c.bodyB].owner;
 
-                if (col.gameObject.Equals(lightObject))
+                if (col.gameObject.Equals(fuzeObject))
                 {
-                    puzzleManager.lightAttached = true;
-                    //Debug.Log("Light Attached!");
+                    puzzleManager.lineAttached = true;
                 }
                 else
                 {
-                    puzzleManager.lightAttached = false;
+                    puzzleManager.lineAttached = false;
                 }
             }
         }
