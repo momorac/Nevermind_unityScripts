@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class EndingSceneScript : MonoBehaviour
 {
@@ -11,9 +13,53 @@ public class EndingSceneScript : MonoBehaviour
     public GameObject VCamera_first;
     public GameObject VCamera_second;
     public GameObject VCamera_third;
+    public GameObject VCamera_final;
     public int cameraCount = 0;
-    public GameObject light_;
 
+    [Space(10)]
+    [Header("Final Credit")]
+    public string[] credit_texts;
+    public GameObject creditText;
+    [SerializeField]
+    private int currentCreditCount;
+
+
+    [Space(10)]
+    [Header("Sky&Lights")]
+    public Material skyBox_Material;
+    private float skybox_InitValue = 1.3f;
+    public float skybox_TargetValue;
+
+    [Space(10)]
+    public Material skyHalo_Material;
+    public Color skyHalo_InitialColor;
+    public Color skyHalo_TargetColor;
+
+    [Space(10)]
+    public GameObject light_first;
+    public Color firstLight_InitialColor;
+    public Color firstLight_TargetColor;
+
+    [Space(10)]
+    public GameObject lensFlare;
+    public Vector3 lensFlare_InitPosition;
+    public Vector3 lensFlare_TargetPosition;
+
+
+    [Space(10)]
+    public GameObject light_second;
+    public GameObject Auroras;
+    public Color secondLight_InitialColor;
+    public Color secondLight_TargetColor;
+
+    [Space(10)]
+    public GameObject light_third_point;
+    public GameObject light_third_directional;
+
+    [Space(10)]
+    public GameObject lights_final;
+    public GameObject Stars;
+    public GameObject OvalLights;
 
     [Space(10)]
     [Header("Animators")]
@@ -24,13 +70,6 @@ public class EndingSceneScript : MonoBehaviour
 
     [Space(10)]
     [Header("Color Changing Materials")]
-    public Material skyBox_Material;
-    private float skybox_InitValue = 1.3f;
-    public float skybox_TargetValue;
-    public Material skyHalo_Material;
-    public Color skyHalo_InitialColor;
-    public Color skyHalo_TargetColor;
-
     [Space(10)]
     public Material firstFloor_Material;
     private Color firstFloor_InitialColor;
@@ -76,6 +115,10 @@ public class EndingSceneScript : MonoBehaviour
         skyBox_Material.SetFloat("_D2I", 1.3f);
         skyHalo_Material.color = new Color(0, 0, 0, 0);
 
+        light_first.GetComponent<Light>().color = firstLight_InitialColor;
+        lensFlare.transform.position = lensFlare_InitPosition;
+
+        currentCreditCount = 0;
 
     }
 
@@ -99,34 +142,176 @@ public class EndingSceneScript : MonoBehaviour
     private void Update()
     {
 
-        if (Input.GetMouseButtonDown(0))
-        {
-            StartCoroutine("SkyAmbientChange");
-        }
-        if (Input.GetKey(KeyCode.Space))
-        {
-            StartCoroutine(ChangeCameraScene());
-        }
+        // if (Input.GetMouseButtonDown(0))
+        // {
+        //     StartCoroutine("SkyAmbientChange");
+        //     StartCoroutine("LightingChange");
+        // }
+
     }
 
-    private IEnumerator SkyAmbientChange()
+    // Change skybox Material Intensity & halo effect Intensity 
+    private IEnumerator SkyAmbientChange(int count)
     {
         float elapsedTime = 0f;
 
+        // 1: 첫번째 씬에서 하늘 밝아지는 연출
+        if (count == 1)
+        {
+            skyBox_Material.SetFloat("_D2I", skybox_InitValue);
+            skyHalo_Material.color = new Color(0, 0, 0, 0);
 
-        while (elapsedTime < ambientChangeDuration)
+            while (elapsedTime < ambientChangeDuration)
+            {
+                elapsedTime += Time.deltaTime;
+                float t = elapsedTime / ambientChangeDuration;
+
+                float newSkyBox = Mathf.Lerp(skybox_InitValue, skybox_TargetValue, t);
+                skyBox_Material.SetFloat("_D2I", newSkyBox);
+
+                skyHalo_Material.color = Color.Lerp(skyHalo_InitialColor, skyHalo_TargetColor, t);
+
+                yield return null;
+            }
+        }
+
+        else if (count == 2)
+        {
+            skyBox_Material.SetFloat("_D2I", 0.99f);
+            skyHalo_Material.color = skyHalo_TargetColor;
+
+            while (elapsedTime < 8)
+            {
+                elapsedTime += Time.deltaTime;
+                float t = elapsedTime / 8;
+
+                float newSkyBox = Mathf.Lerp(0.99f, 1.3f, t);
+                skyBox_Material.SetFloat("_D2I", newSkyBox);
+
+                skyHalo_Material.color = Color.Lerp(skyHalo_TargetColor, new Color(0, 0, 0, 0), t);
+
+                yield return null;
+            }
+        }
+    }
+
+    // Light Ambient & Lens Flare Effect Change
+    private IEnumerator LightingChange()
+    {
+        float elapsedTime = 0f;
+
+        // 첫번째 씬 라이팅 세팅
+        if (cameraCount == 0)
+        {
+            // 첫번째씬 light 오브젝트 활성화
+            light_first.SetActive(true);
+            Light firstLight = light_first.GetComponent<Light>();
+            firstLight.color = firstLight_InitialColor;
+
+            // 첫번째씬 lensFlare 오브젝트 활성화
+            lensFlare.SetActive(true);
+            lensFlare.transform.position = lensFlare_InitPosition;
+            LensFlareComponentSRP lf = lensFlare.GetComponent<LensFlareComponentSRP>();
+
+            // 코루틴으로 라이트 컬러 변경 & 렌즈플레어 위치/강도 변경
+            while (elapsedTime < ambientChangeDuration)
+            {
+                elapsedTime += Time.deltaTime;
+                float t = elapsedTime / ambientChangeDuration;
+
+                firstLight.color = Color.Lerp(firstLight_InitialColor, firstLight_TargetColor, t);
+                lensFlare.transform.position = Vector3.Lerp(lensFlare_InitPosition, lensFlare_TargetPosition, t);
+                lf.intensity = Mathf.Lerp(0, 1, t);
+
+                yield return null;
+            }
+        }
+
+
+        // 두번째 씬 라이팅 세팅
+        else if (cameraCount == 1)
+        {
+            light_first.SetActive(false);
+            light_second.SetActive(true);
+
+            skyBox_Material.SetFloat("_D2I", 0.98f);
+            Auroras.SetActive(true);
+
+            Light secondLight = light_second.GetComponent<Light>();
+
+            while (elapsedTime < ambientChangeDuration)
+            {
+                elapsedTime += Time.deltaTime;
+                float t = elapsedTime / ambientChangeDuration;
+
+                secondLight.color = Color.Lerp(secondLight_InitialColor, secondLight_TargetColor, t);
+
+                yield return null;
+            }
+        }
+
+        // 세번째 씬 라이팅 세팅
+        else if (cameraCount == 2)
+        {
+            light_second.SetActive(false);
+            lensFlare.SetActive(false);
+            Auroras.SetActive(false);
+
+            light_third_point.SetActive(true);
+            light_third_directional.SetActive(true);
+        }
+
+
+        // 파이널씬 라이팅 세팅
+        else if (cameraCount == 3)
+        {
+            light_third_point.SetActive(false);
+            Light thirdSceneLight = light_third_directional.GetComponent<Light>();
+
+            StartCoroutine(FinalScene_LightFade());
+
+            while (thirdSceneLight.intensity > 0.15f)
+            {
+                thirdSceneLight.intensity -= 0.02f;
+
+                yield return new WaitForSeconds(0.1f);
+            }
+        }
+    }
+
+    private IEnumerator FinalScene_LightFade()
+    {
+
+        // 부모 오브젝트의 모든 자식 오브젝트 탐색
+        List<Light> lights = new List<Light>();
+
+        foreach (Transform child in lights_final.transform)
+        {
+            Light childLight = child.GetComponent<Light>();
+            if (childLight != null && childLight.type == LightType.Point)
+            {
+                childLight.intensity = 0;
+                lights.Add(childLight);
+            }
+        }
+
+        lights_final.SetActive(true);
+        float elapsedTime = 0;
+
+        while (elapsedTime < 2)
         {
             elapsedTime += Time.deltaTime;
-            float t = elapsedTime / ambientChangeDuration;
+            float t = elapsedTime / 2;
 
-            float newSkyBox = Mathf.Lerp(skybox_InitValue, skybox_TargetValue, t);
-            skyBox_Material.SetFloat("_D2I", newSkyBox);
-
-            skyHalo_Material.color = Color.Lerp(skyHalo_InitialColor, skyHalo_TargetColor, t);
-
+            foreach (Light light in lights)
+            {
+                light.intensity = Mathf.Lerp(0, 1, t);
+            }
             yield return null;
         }
     }
+
+
 
     private IEnumerator GroundColorChange()
     {
@@ -153,7 +338,6 @@ public class EndingSceneScript : MonoBehaviour
             water_Material.SetFloat("_Smoothness", newSmoothness);
 
 
-            // 한 프레임 대기
             yield return null;
         }
 
@@ -189,33 +373,82 @@ public class EndingSceneScript : MonoBehaviour
     }
 
 
-    private IEnumerator ChangeCameraScene()
+    private void ChangeCameraScene()
     {
         switch (cameraCount)
         {
             case 0:
                 SetAnimation();
                 StartCoroutine(GroundColorChange());
+                StartCoroutine(SkyAmbientChange(1));
+                StartCoroutine(LightingChange());
                 VCamera_first.SetActive(true);
                 cameraCount++;
                 break;
             case 1:
                 VCamera_first.SetActive(false);
                 SetAnimation();
+                StartCoroutine(LightingChange());
                 StartCoroutine(GroundColorChange());
                 VCamera_second.SetActive(true);
                 cameraCount++;
                 break;
             case 2:
                 VCamera_second.SetActive(false);
+
                 SetAnimation();
                 StartCoroutine(GroundColorChange());
+                StartCoroutine(SkyAmbientChange(2));
+                StartCoroutine(LightingChange());
+
                 VCamera_third.SetActive(true);
-                light_.SetActive(true);
                 cameraCount++;
                 break;
+            case 3:
+                VCamera_final.SetActive(true);
+
+                StartCoroutine(LightingChange());
+                Stars.GetComponent<Animator>().enabled = true;
+                OvalLights.SetActive(true);
+
+                break;
         }
-        yield break;
+    }
+
+    IEnumerator EndingCreditRoll()
+    {
+        if (currentCreditCount > credit_texts.Length)
+            yield break;
+
+        float elapsedTime = 0;
+
+        TMP_Text txt = creditText.GetComponent<TMP_Text>();
+        txt.text = credit_texts[currentCreditCount];
+        currentCreditCount++;
+
+        while (elapsedTime < 0.7f)
+        {
+            elapsedTime += Time.deltaTime;
+
+            txt.color = Color.Lerp(new Color(0, 0, 0, 0), Color.white, elapsedTime / 0.7f);
+            yield return null;
+        }
+        while (elapsedTime < 1.8f)
+        {
+            elapsedTime += Time.deltaTime;
+
+            yield return null;
+        }
+        while (elapsedTime < 2.5f)
+        {
+            elapsedTime += Time.deltaTime;
+
+            txt.color = Color.Lerp(Color.white, new Color(0, 0, 0, 0), elapsedTime - 1.8f / 0.7f);
+
+            yield return null;
+        }
+
+        StartCoroutine(EndingCreditRoll());
     }
 
 }
