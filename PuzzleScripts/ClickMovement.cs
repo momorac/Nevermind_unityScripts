@@ -13,10 +13,10 @@ public class ClickMovement : MonoBehaviour
 
     public GameObject plug;
     public GameObject clickPoint;
+    public AudioSource pickUpSound;
     [SerializeField]
     private bool isCarryingPlug = false;    // 캐릭터가 plug를 잡고 있는지 여부
     public Transform carryPosition;         // plug가 종속될 위치 (캐릭터 앞)
-    public float pickUpDistance = 2.0f;     // plug를 잡을 수 있는 최대 거리
 
     private void Awake()
     {
@@ -32,12 +32,6 @@ public class ClickMovement : MonoBehaviour
 
     private void Update()
     {
-        HandleMovement();
-        HandleCarryingPlug();
-    }
-
-    private void HandleMovement()
-    {
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -48,12 +42,32 @@ public class ClickMovement : MonoBehaviour
                 clickPoint.SetActive(true);
 
                 agent.SetDestination(hit.point);
-
-                // 에이전트가 이동 중인지 확인하여 애니메이터 상태 변경
-                animator.SetBool("IsMoving", agent.remainingDistance > 0.1f);
             }
         }
+
+
+        // 에이전트의 남은 거리를 체크하여 도착 여부를 확인
+        if (agent.remainingDistance <= agent.stoppingDistance)
+        {
+            // 남은 거리가 거의 없다면 속도를 0으로 설정
+            if (!agent.hasPath || agent.velocity.sqrMagnitude == 0f)
+            {
+                animator.SetBool("IsMoving", false);
+                agent.isStopped = true;  // 이동 중지
+                agent.updateRotation = false; // 회전 중지
+            }
+        }
+        else
+        {
+            animator.SetBool("IsMoving", true);
+            agent.isStopped = false; // 이동 재개
+            agent.updateRotation = true; // 회전 허용
+        }
+
+
+        HandleCarryingPlug();
     }
+
 
     private void HandleCarryingPlug()
     {
@@ -67,7 +81,7 @@ public class ClickMovement : MonoBehaviour
     private void OnTriggerStay(Collider other)
     {
         // Plug와의 충돌을 확인하고 클릭 시 Plug를 들 수 있도록 함
-        if (other.gameObject == plug && Vector3.Distance(transform.position, plug.transform.position) <= pickUpDistance)
+        if (other.gameObject == plug)
         {
             if (Input.GetMouseButtonDown(0))
             {
@@ -78,7 +92,9 @@ public class ClickMovement : MonoBehaviour
 
     private void PickUpPlug()
     {
+        if (!isCarryingPlug) pickUpSound.Play();
         isCarryingPlug = true;
+        
         plug.transform.SetParent(carryPosition);
         plug.transform.localPosition = Vector3.zero;
         plug.transform.localRotation = Quaternion.identity;
