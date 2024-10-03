@@ -2,72 +2,72 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Experimental.GlobalIllumination;
 
 public class PuzzleManager_first : MonoBehaviour
 {
-
-    //public GameObject Plug;
-    //public GameObject Destination;
-    //public GameObject Line;
-    //public GameObject Light;
     public GameObject EndImage;
 
     [Space(20)]
     public bool plugAttached = false;
     private bool pre_plugState = false;
 
-    public bool lightAttached = false;
-    private bool pre_lightState = false;
+    public bool lineAttached = false;
+    private bool pre_lineState = false;
 
     [Space(20)]
     public bool endTrigger = false;
 
+    [Space(20)]
+    public GameObject fuzeLight_1;
+    public GameObject fuzeLight_2;
+    public Material fuzeOn_Material;
+    private Material fuzeOff_Material;
+    public AudioSource fuzeOn_Sound;
+    public AudioSource fuzeOff_Sound;
+
+    public GameObject fuzeNoise;
+
+    void Start()
+    {
+        fuzeOff_Material = fuzeLight_1.GetComponent<MeshRenderer>().material;
+    }
+
+
     void Update()
     {
-        bool plugOn = PlugCheck();
-        bool lightOn = LightCheck();
 
-        if (plugOn && lightOn)
+        // 클리어 조건 검사
+        if (plugAttached && lineAttached)
         {
             endTrigger = true;
             Debug.Log("Stage Clear!");
-            EndImage.SetActive(true);
+        }
+
+        // lineAttached 상태 변화 확인 및 처리
+        if (lineAttached != pre_lineState) // 상태가 변할 때
+        {
+            if (lineAttached) // 연결되었을 때
+            {
+                fuzeOn_Sound.Play();
+                fuzeLight_1.GetComponent<MeshRenderer>().material = fuzeOn_Material;
+                fuzeLight_2.GetComponent<MeshRenderer>().material = fuzeOn_Material;
+                fuzeNoise.SetActive(false);
+            }
+            else // 연결이 해제되었을 때
+            {
+                fuzeOff_Sound.Play();
+                fuzeLight_1.GetComponent<MeshRenderer>().material = fuzeOff_Material;
+                fuzeLight_2.GetComponent<MeshRenderer>().material = fuzeOff_Material;
+                fuzeNoise.SetActive(true);
+            }
         }
     }
 
-    private bool PlugCheck()
+    void LateUpdate()
     {
-        if (plugAttached)
-        {
-            pre_plugState = plugAttached;
-            Debug.Log("Calble Linked!");
-            return true;
-        }
-        if (pre_plugState == true && !plugAttached)
-        {
-            pre_plugState = plugAttached;
-            Debug.Log("Calble Uninked!");
-            return false;
-        }
-        return false;
+        pre_lineState = lineAttached;
+        pre_plugState = plugAttached;
     }
-
-    private bool LightCheck()
-    {
-        if (lightAttached)
-        {
-            pre_lightState = lightAttached;
-            Debug.Log("Light Attached!");
-            return true;
-        }
-        if (pre_lightState && !lightAttached)
-        {
-            pre_lightState = lightAttached;
-            Debug.Log("Light detached!");
-            return false;
-        }
-        return false;
-    }
-
 
 }
