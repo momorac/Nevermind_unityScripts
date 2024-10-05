@@ -8,14 +8,14 @@ using Quaternion = UnityEngine.Quaternion;
 
 public class ClickMovement : MonoBehaviour
 {
-    NavMeshAgent agent;
+    public bool isEnded;
+    public NavMeshAgent agent;
     Animator animator;
 
     public GameObject plug;
     public GameObject clickPoint;
     public AudioSource pickUpSound;
-    [SerializeField]
-    private bool isCarryingPlug = false;    // 캐릭터가 plug를 잡고 있는지 여부
+    public bool isCarryingPlug = false;    // 캐릭터가 plug를 잡고 있는지 여부
     public Transform carryPosition;         // plug가 종속될 위치 (캐릭터 앞)
 
     private void Awake()
@@ -28,49 +28,60 @@ public class ClickMovement : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        isEnded = false;
     }
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (isEnded == false)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
+
+            if (Input.GetMouseButtonDown(0))
             {
-                clickPoint.SetActive(false);
-                clickPoint.transform.position = hit.point;
-                clickPoint.SetActive(true);
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out RaycastHit hit))
+                {
+                    clickPoint.SetActive(false);
+                    clickPoint.transform.position = hit.point;
+                    clickPoint.SetActive(true);
 
-                agent.SetDestination(hit.point);
+                    agent.SetDestination(hit.point);
+                }
             }
-        }
 
 
-        // 에이전트의 남은 거리를 체크하여 도착 여부를 확인
-        if (agent.remainingDistance <= agent.stoppingDistance)
-        {
-            // 남은 거리가 거의 없다면 속도를 0으로 설정
-            if (!agent.hasPath || agent.velocity.sqrMagnitude == 0f)
+            // 에이전트의 남은 거리를 체크하여 도착 여부를 확인
+            if (agent.remainingDistance <= agent.stoppingDistance)
             {
-                animator.SetBool("IsMoving", false);
-                agent.isStopped = true;  // 이동 중지
-                agent.updateRotation = false; // 회전 중지
+                // 남은 거리가 거의 없다면 속도를 0으로 설정
+                if (!agent.hasPath || agent.velocity.sqrMagnitude == 0f)
+                {
+                    animator.SetBool("IsMoving", false);
+                    agent.isStopped = true;  // 이동 중지
+                    agent.updateRotation = false; // 회전 중지
+                }
             }
+            else
+            {
+                animator.SetBool("IsMoving", true);
+                agent.isStopped = false; // 이동 재개
+                agent.updateRotation = true; // 회전 허용
+            }
+
+
+            HandleCarryingPlug();
         }
         else
         {
-            animator.SetBool("IsMoving", true);
-            agent.isStopped = false; // 이동 재개
-            agent.updateRotation = true; // 회전 허용
+            Debug.Log("Control Unabled");
         }
-
-
-        HandleCarryingPlug();
     }
 
 
     private void HandleCarryingPlug()
     {
+        if (isEnded) return;  // 엔딩 상태면 플러그 관련 동작 중지
+
         if (isCarryingPlug)
         {
             // 캐릭터가 Plug를 운반 중일 때, Plug를 캐릭터와 함께 이동
@@ -94,7 +105,8 @@ public class ClickMovement : MonoBehaviour
     {
         if (!isCarryingPlug) pickUpSound.Play();
         isCarryingPlug = true;
-        
+        //animator.SetBool("IsGrab", true);
+
         plug.transform.SetParent(carryPosition);
         plug.transform.localPosition = Vector3.zero;
         plug.transform.localRotation = Quaternion.identity;

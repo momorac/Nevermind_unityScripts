@@ -27,6 +27,13 @@ public class PuzzleManager_first : MonoBehaviour
     public AudioSource fuzeOff_Sound;
 
     public GameObject fuzeNoise;
+    private GameObject clearObject;
+
+
+    void Awake()
+    {
+        clearObject = transform.GetChild(0).gameObject;
+    }
 
     void Start()
     {
@@ -40,7 +47,8 @@ public class PuzzleManager_first : MonoBehaviour
         // 클리어 조건 검사
         if (plugAttached && lineAttached)
         {
-            endTrigger = true;
+            // 엔딩 컨트롤러 컴포넌트 활성화
+            clearObject.SetActive(true);
             Debug.Log("Stage Clear!");
         }
 
